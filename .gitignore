@@ -1,0 +1,26 @@
+# Confidential Types
+*.dump
+
+# JetBrains IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Go
+/bin/
+/dist/
+/vendor/
+*.exe
+*.test
+*.prof
+go.work
+
+# Atlas
+.atlas/

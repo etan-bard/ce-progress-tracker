@@ -1,0 +1,71 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:8.2-ubi8
+    container_name: ce-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_ROOT_USER}
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
+      - MONGODB_INITDB_DATABASE=${MONGODB_DATABASE}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - mongodb_data:/var/lib/mongodb
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: ce-sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MSSQL_USER=${MSSQL_USER}
+      - MSSQL_PID=Express
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U ${MSSQL_USER} -P ${MSSQL_SA_PASSWORD} -C -Q 'SELECT 1' || exit 1" ]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - mssql_data:/var/opt/mssql
+
+  goose:
+    build:
+      context: .
+      dockerfile: Dockerfile.goose
+    container_name: ce-goose
+    volumes:
+      - ./migrations:/migrations
+    environment:
+      - GOOSE_DRIVER=mssql
+      - GOOSE_DBSTRING=sqlserver://${MSSQL_USER}:${MSSQL_SA_PASSWORD}@ce-sqlserver:1433?encrypt=disable
+    command: up
+    restart: "no"
+    init: true
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  sql-gen:
+    image: sqlc/sqlc:latest
+    container_name: ce-sql-gen
+    volumes:
+      - .:/src
+    working_dir: /src
+    command: generate
+    restart: "no"
+    init: true
+    depends_on:
+      goose:
+        condition: service_completed_successfully
+
+volumes:
+  mssql_data:
+  mongodb_data:
