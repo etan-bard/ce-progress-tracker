@@ -24,3 +24,7 @@ go.work
 
 # Atlas
 .atlas/
+
+# Agents
+.junie/
+.vibe/

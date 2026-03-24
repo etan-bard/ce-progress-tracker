@@ -42,7 +42,7 @@ services:
       dockerfile: Dockerfile.goose
     container_name: ce-goose
     volumes:
-      - ./migrations:/migrations
+      - ./db/migrations:/migrations
     environment:
       - GOOSE_DRIVER=mssql
       - GOOSE_DBSTRING=sqlserver://${MSSQL_USER}:${MSSQL_SA_PASSWORD}@ce-sqlserver:1433?encrypt=disable
@@ -52,19 +52,6 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
-
-  sql-gen:
-    image: sqlc/sqlc:latest
-    container_name: ce-sql-gen
-    volumes:
-      - .:/src
-    working_dir: /src
-    command: generate
-    restart: "no"
-    init: true
-    depends_on:
-      goose:
-        condition: service_completed_successfully
 
   mongodb-restore:
     image: mongodb/mongodb-community-server:8.2-ubi8
@@ -81,6 +68,18 @@ services:
       - MONGODB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
     command: >
       mongorestore --host mongodb --username ${MONGODB_ROOT_USER} --password ${MONGODB_ROOT_PASSWORD} --authenticationDatabase admin --drop --archive=/mongo.dump --gzip
+    restart: "no"
+
+  mockery:
+    image: vektra/mockery:latest
+    container_name: ce-mockery
+    profiles:
+      - manual
+    environment:
+      - GOTOOLCHAIN=auto
+    volumes:
+      - .:/src
+    working_dir: /src
     restart: "no"
 
 volumes:
