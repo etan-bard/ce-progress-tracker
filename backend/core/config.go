@@ -35,15 +35,11 @@ func NewConfig() (*Config, error) {
 
 	ret := &Config{
 		Viper:   v,
-		FlagSet: flag.CommandLine,
+		courses: flag.String("courses", "", "comma-separated List of course IDs to process"),
 	}
 
-	// Establishes the command line flags, then parses them
-	ret.FlagSet.StringVar(ret.courses, "courses", "", "comma-separated List of course IDs to process")
-	err := ret.FlagSet.Parse(os.Args[1:])
-	if err != nil {
-		return nil, fmt.Errorf("error parsing command line flags: %w", err)
-	}
+	flag.Parse()
+
 	return ret, nil
 }
 
@@ -74,7 +70,7 @@ func (c *Config) GetLogLevel() LogLevel {
 // GetMSSQLConnectionString returns the MSSQL connection string from the configuration
 func (c *Config) GetMSSQLConnectionString() string {
 	user := c.getRequiredValue("MSSQL_USER")
-	password := c.getRequiredValue("MSSQL_SA_PASSWORD")
+	password := c.getRequiredValue("MSSQL_PASSWORD")
 	host := c.getRequiredValue("MSSQL_HOST")
 	port := c.getRequiredValue("MSSQL_PORT")
 	return fmt.Sprintf("sqlserver://%s:%s@%s:%s?encrypt=disable", user, password, host, port)
@@ -82,14 +78,16 @@ func (c *Config) GetMSSQLConnectionString() string {
 
 // GetMongoURI returns the MongoDB connection URI from the configuration
 func (c *Config) GetMongoURI() string {
-	host := c.getRequiredValue("MONGO_HOST")
-	port := c.getRequiredValue("MONGO_PORT")
-	return fmt.Sprintf("mongodb://%s:%s", host, port)
+	host := c.getRequiredValue("MONGODB_HOST")
+	port := c.getRequiredValue("MONGODB_PORT")
+	username := c.getRequiredValue("MONGODB_USER")
+	password := c.getRequiredValue("MONGODB_PASSWORD")
+	return fmt.Sprintf("mongodb://%s:%s@%s:%s", username, password, host, port)
 }
 
 // GetMongoDBName returns the MongoDB database name from the configuration
 func (c *Config) GetMongoDBName() string {
-	return c.getRequiredValue("MONGO_DB_NAME")
+	return c.getRequiredValue("MONGODB_DATABASE")
 }
 
 func (c *Config) GetScriptBatchSize() int {
@@ -98,6 +96,14 @@ func (c *Config) GetScriptBatchSize() int {
 		batchSize = 1000
 	}
 	return batchSize
+}
+
+func (c *Config) GetMaxGoroutines() int {
+	maxGoroutines := c.Viper.GetInt("MAX_GOROUTINES")
+	if maxGoroutines <= 0 {
+		maxGoroutines = 10 // Default value
+	}
+	return maxGoroutines
 }
 
 // getRequiredValue returns value with priority: .env key > env var.

@@ -9,9 +9,9 @@
 .idea_modules/
 
 # Environment variables
-.env
-.env.*
-!.env.example
+backend/.env
+backend/.env.example
+!backend/.env.example
 
 # Go
 /bin/

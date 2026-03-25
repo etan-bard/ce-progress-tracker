@@ -1,7 +1,5 @@
 package mongo
 
-import "time"
-
 // TakesAnonymized represents an object from the takes_anonymized collection
 type TakesAnonymized struct {
 	CourseData      *CourseData      `bson:"course_data"`
@@ -13,7 +11,8 @@ type CourseData struct {
 }
 
 type ParticipantData struct {
-	ParticipantID    int        `bson:"participant_id"`
-	LastAccessedAt   *time.Time `bson:"last_accessed_at"`
-	CourseCompletion bool       `bson:"course_completion"`
+	ParticipantID     int     `bson:"participant_id"`
+	DateFirstAccessed float64 `bson:"date_first_accessed"`
+	DateLastAccessed  float64 `bson:"date_last_accessed"`
+	CourseCompletion  float64 `bson:"course_completion"`
 }

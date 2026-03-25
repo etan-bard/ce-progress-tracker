@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type TakesAnonymizedRepositoryInterface interface{
+type TakesAnonymizedRepositoryInterface interface {
 	GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (*mongo.Cursor, error)
 }
 
@@ -23,17 +23,19 @@ func NewTakesAnonymizedRepository(mongo DbServiceInterface) *TakesAnonymizedRepo
 
 func (t *TakesAnonymizedRepository) GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (*mongo.Cursor, error) {
 	// Create filter based on courseIDs
-	var filter map[string]interface{}
-	
+	var filter = make(map[string]interface{})
+
+	// Add the course IDs if present, otherwise we retrieve everything
 	if courseIDs != nil && len(*courseIDs) > 0 {
-		filter = map[string]interface{}{
-			"course_id": map[string]interface{}{
-				"$in": *courseIDs,
-			},
+		filter["course_data.course_id"] = map[string]interface{}{
+			"$in": *courseIDs,
 		}
-	} else {
-		// If courseIDs is nil or empty, return all documents
-		filter = map[string]interface{}{}
+	}
+
+	// Add filter for participant_data.date_first_accessed to be greater than 0
+	// since there are 6 duplicate records with a null date_first_accessed
+	filter["participant_data.date_first_accessed"] = map[string]interface{}{
+		"$gt": float64(0),
 	}
 
 	return t.collection.Find(

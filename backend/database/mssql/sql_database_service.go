@@ -16,7 +16,7 @@ type DBService struct {
 }
 
 func NewMSSQLDatabaseService(dsn string) (DBServiceInterface, error) {
-	db, err := sqlx.Connect("mssql", dsn)
+	db, err := sqlx.Connect("sqlserver", dsn)
 	if err != nil {
 		return nil, err
 	}

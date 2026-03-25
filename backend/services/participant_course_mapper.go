@@ -1,8 +1,9 @@
 package services
 
 import (
-	"ce-progress-tracker/internal/database/mongo"
-	"ce-progress-tracker/internal/database/mssql"
+	"ce-progress-tracker/database/mongo"
+	"ce-progress-tracker/database/mssql"
+	"time"
 )
 
 type ParticipantMapperInterface interface {
@@ -23,9 +24,16 @@ func (m *ParticipantCourseMapper) MongoToSQL(record *mongo.TakesAnonymized) *mss
 	}
 
 	return &mssql.ParticipantCourse{
-		ParticipantID:    record.ParticipantData.ParticipantID,
-		CourseID:         record.CourseData.CourseID,
-		LastAccessedAt:   record.ParticipantData.LastAccessedAt,
-		CourseCompletion: record.ParticipantData.CourseCompletion,
+		ParticipantID:     record.ParticipantData.ParticipantID,
+		CourseID:          record.CourseData.CourseID,
+		DateFirstAccessed: m.getUnixTimestamp(record.ParticipantData.DateFirstAccessed),
+		DateLastAccessed:  *m.getUnixTimestamp(record.ParticipantData.DateLastAccessed),
+		CourseCompletion:  float32(record.ParticipantData.CourseCompletion),
 	}
+}
+
+// getUnixTimestamp Convert float64 timestamp (assumed milliseconds) to time.Time
+func (m *ParticipantCourseMapper) getUnixTimestamp(timestamp float64) *time.Time {
+	ret := time.Unix(0, int64(timestamp)*int64(time.Millisecond))
+	return &ret
 }

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"ce-progress-tracker/internal/core"
-	"ce-progress-tracker/internal/database/mongo"
-	"ce-progress-tracker/internal/database/mssql"
-	"ce-progress-tracker/internal/services"
+	"ce-progress-tracker/core"
+	"ce-progress-tracker/database/mongo"
+	"ce-progress-tracker/database/mssql"
+	"ce-progress-tracker/services"
 	"context"
 	"log"
 
@@ -26,8 +26,9 @@ func main() {
 	logger.Info("Configuration and logger initialized", zap.String("level", string(config.GetLogLevel())))
 
 	// Initialize database
-	dsn := config.GetMSSQLConnectionString()
-	db, err := mssql.NewMSSQLDatabaseService(dsn)
+	db, err := mssql.NewMSSQLDatabaseService(
+		config.GetMSSQLConnectionString(),
+	)
 	if err != nil {
 		logger.Fatal("Failed to initialize database", zap.Error(err))
 	}
@@ -46,9 +47,13 @@ func main() {
 	takesAnonymizedRepository := mongo.NewTakesAnonymizedRepository(mongoService)
 	mapper := services.NewParticipantCourseMapper()
 	batchSize := config.GetScriptBatchSize()
+	maxGoroutines := config.GetMaxGoroutines()
 
-	dataMigrationStrategy := services.NewBatchDataMigrationStrategy(mapper, participantCourseRepository, takesAnonymizedRepository, logger, batchSize)
-	inserted, updated, err := dataMigrationStrategy.Execute(context.Background(), nil)
+	dataMigrationStrategy := services.NewBatchDataMigrationStrategy(mapper, participantCourseRepository, takesAnonymizedRepository, logger, batchSize, maxGoroutines)
+	inserted, updated, skipped, err := dataMigrationStrategy.Execute(context.Background(), config.GetCourseIDs())
+	if err != nil {
+		logger.Fatal("Migration failed", zap.Error(err))
+	}
 
-	logger.Info("Migration completed", zap.Int("total_inserted", inserted), zap.Int("total_updated", updated))
+	logger.Info("Migration completed", zap.Int("total_inserted", inserted), zap.Int("total_updated", updated), zap.Int("total_skipped", skipped))
 }

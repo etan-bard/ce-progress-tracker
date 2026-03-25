@@ -2,10 +2,10 @@
 // github.com/vektra/mockery
 // template: testify
 
-package internal
+package backend
 
 import (
-	"ce-progress-tracker/internal/database/mssql"
+	"ce-progress-tracker/database/mssql"
 
 	mock "github.com/stretchr/testify/mock"
 )
