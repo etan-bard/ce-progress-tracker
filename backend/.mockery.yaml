@@ -6,6 +6,9 @@ pkgname: "{{.SrcPackageName}}"
 recursive: true
 template: testify
 packages:
-  ce-progress-tracker/internal:
+  ce-progress-tracker/database:
+    config:
+      all: true
+  ce-progress-tracker/services:
     config:
       all: true

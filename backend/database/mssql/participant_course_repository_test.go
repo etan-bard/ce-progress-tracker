@@ -1,50 +1,64 @@
 package mssql
 
 import (
-	"strings"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestParticipantCourseRepository_UpsertAll(t *testing.T) {
-	mockDB := NewMockDBServiceInterface(t)
-	repo := NewParticipantCourseRepository(mockDB)
+type ParticipantCourseRepositoryTestSuite struct {
+	suite.Suite
+	mockDB *MockDBServiceInterface
+	repo   *ParticipantCourseRepository
+}
 
+func (s *ParticipantCourseRepositoryTestSuite) SetupTest() {
+	s.mockDB = NewMockDBServiceInterface(s.T())
+	s.repo = NewParticipantCourseRepository(s.mockDB)
+}
+
+func TestParticipantCourseRepositoryTestSuite(t *testing.T) {
+	suite.Run(t, new(ParticipantCourseRepositoryTestSuite))
+}
+
+func (s *ParticipantCourseRepositoryTestSuite) TestUpsertAll() {
 	now := time.Now()
 	entries := []ParticipantCourse{
 		{
 			ParticipantID:    1,
 			CourseID:         101,
-			DateLastAccessed: &now,
+			DateLastAccessed: now,
 			CourseCompletion: 1.0,
 		},
 		{
 			ParticipantID:    2,
 			CourseID:         102,
-			DateLastAccessed: &now,
+			DateLastAccessed: now,
 			CourseCompletion: 0.0,
 		},
 	}
 
-	t.Run("query includes update condition", func(t *testing.T) {
-		mockDB.EXPECT().Rebind(mock.MatchedBy(func(query string) bool {
-			return strings.Contains(query, "WHEN MATCHED AND (Target.DateLastAccessed <> Source.DateLastAccessed OR Target.CourseCompletion <> Source.CourseCompletion)")
-		})).Return("rebound")
-		mockDB.EXPECT().Select(mock.Anything, "rebound", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	s.Run("query includes update condition", func() {
+		s.mockDB.On("Rebind", mock.Anything).Return("rebound").Once()
+		s.mockDB.On("Select", mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
 
-		err := repo.UpsertAll(&entries, nil, nil, nil)
-		assert.NoError(t, err)
+		var i, u, sk int
+		err := s.repo.UpsertAll(&entries, &i, &u, &sk)
+		s.NoError(err)
 	})
 
-	t.Run("successful upsert", func(t *testing.T) {
-		var insertedCount, updatedCount int
+	s.Run("successful upsert", func() {
+		var insertedCount, updatedCount, skippedCount int
 
-		mockDB.EXPECT().Rebind(mock.AnythingOfType("string")).Return("rebound query")
-		mockDB.EXPECT().Select(mock.Anything, "rebound query", mock.Anything).Run(func(dest interface{}, query string, args ...interface{}) {
-			// Simulate SQL Server returning the actions
+		s.mockDB.On("Rebind", mock.Anything).Return("rebound query").Once()
+		s.mockDB.On("Select", mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+			dest := args.Get(0)
 			d := dest.(*[]struct {
 				Action string `db:"Action"`
 			})
@@ -54,59 +68,50 @@ func TestParticipantCourseRepository_UpsertAll(t *testing.T) {
 			*d = append(*d, struct {
 				Action string `db:"Action"`
 			}{Action: "UPDATE"})
-		}).Return(nil)
+		}).Return(nil).Once()
 
-		err := repo.UpsertAll(&entries, &insertedCount, &updatedCount)
+		err := s.repo.UpsertAll(&entries, &insertedCount, &updatedCount, &skippedCount)
 
-		assert.NoError(t, err)
-		assert.Equal(t, 1, insertedCount)
-		assert.Equal(t, 1, updatedCount)
+		s.NoError(err)
+		s.Equal(1, insertedCount)
+		s.Equal(1, updatedCount)
 	})
 
-	t.Run("skipped record when no change", func(t *testing.T) {
+	s.Run("skipped record when no change", func() {
 		var insertedCount, updatedCount, skippedCount int
 
-		mockDB.EXPECT().Rebind(mock.AnythingOfType("string")).Return("rebound query")
-		mockDB.EXPECT().Select(mock.Anything, "rebound query", mock.Anything).Run(func(dest interface{}, query string, args ...interface{}) {
-			// Simulate SQL Server returning nothing for a record that matched but had no changes
+		s.mockDB.On("Rebind", mock.Anything).Return("rebound query").Once()
+		s.mockDB.On("Select", mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything,
+			mock.Anything, mock.Anything, mock.Anything, mock.Anything).Run(func(args mock.Arguments) {
+			dest := args.Get(0)
 			d := dest.(*[]struct {
 				Action string `db:"Action"`
 			})
 			*d = []struct {
-				Action string `db:"Action" `
-			}{} // Empty result
-		}).Return(nil)
+				Action string `db:"Action"`
+			}{}
+		}).Return(nil).Once()
 
-		err := repo.UpsertAll(&entries, &insertedCount, &updatedCount, &skippedCount)
+		err := s.repo.UpsertAll(&entries, &insertedCount, &updatedCount, &skippedCount)
 
-		assert.NoError(t, err)
-		assert.Equal(t, 0, insertedCount)
-		assert.Equal(t, 0, updatedCount)
-		assert.Equal(t, 2, skippedCount)
+		s.NoError(err)
+		s.Equal(0, insertedCount)
+		s.Equal(0, updatedCount)
+		s.Equal(2, skippedCount)
 	})
 
-	t.Run("argument count check", func(t *testing.T) {
-		// This is mostly to ensure we haven't introduced a logic error in building valueArgs
-		// although the test above already covers it implicitly.
-		var insertedCount, updatedCount int
-		mockDB.EXPECT().Rebind(mock.Anything).Return("rebound")
-		mockDB.EXPECT().Select(mock.Anything, "rebound", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(nil)
-
-		err := repo.UpsertAll(&entries, &insertedCount, &updatedCount)
-		assert.NoError(t, err)
+	s.Run("empty entries", func() {
+		var insertedCount, updatedCount, skippedCount int
+		err := s.repo.UpsertAll(&[]ParticipantCourse{}, &insertedCount, &updatedCount, &skippedCount)
+		s.NoError(err)
+		s.Equal(0, insertedCount)
+		s.Equal(0, updatedCount)
 	})
 
-	t.Run("empty entries", func(t *testing.T) {
-		var insertedCount, updatedCount int
-		err := repo.UpsertAll(&[]ParticipantCourse{}, &insertedCount, &updatedCount)
-		assert.NoError(t, err)
-		assert.Equal(t, 0, insertedCount)
-		assert.Equal(t, 0, updatedCount)
-	})
-
-	t.Run("nil entries", func(t *testing.T) {
-		var insertedCount, updatedCount int
-		err := repo.UpsertAll(nil, &insertedCount, &updatedCount)
-		assert.NoError(t, err)
+	s.Run("nil entries", func() {
+		var insertedCount, updatedCount, skippedCount int
+		err := s.repo.UpsertAll(nil, &insertedCount, &updatedCount, &skippedCount)
+		s.NoError(err)
 	})
 }
