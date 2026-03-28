@@ -34,6 +34,11 @@ This will start the API service along with all dependencies (MongoDB, SQL Server
 ## API Endpoints
 - `GET /participant-courses` - Retrieves all participant-course mappings with completion and access date information
 
+## OpenAPI Documentation
+The API provides OpenAPI documentation at the following endpoint:
+- `GET /docs` - OpenAPI documentation
+- `GET /openapi.json` - OpenAPI specification in JSON format
+
 ## Plan
 
 ### Containerization (Development and Environment Setup)

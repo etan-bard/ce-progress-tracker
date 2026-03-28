@@ -18,7 +18,7 @@ func main() {
 		log.Fatal("Failed to load config", zap.Error(err))
 	}
 
-	// Initialize Logger with configured level
+	// Initialize Logger with the configured level
 	logger, err := core.MakeLogger(config.GetLogLevel())
 	if err != nil {
 		log.Fatal("Failed to create logger", zap.Error(err))
