@@ -10,7 +10,7 @@ A web application to display CE progress data from SQL Server Express.
 The backend API is implemented in `/backend/main.go` and provides endpoints to interact with participant-course data stored in SQL Server Express. The API uses:
 - Huma framework for OpenAPI documentation
 - Chi router for HTTP routing
-- SQLC for database operations
+- SQLx for database operations
 - MSSQL database service for data persistence
 
 ## Prerequisites
@@ -20,7 +20,9 @@ The backend API is implemented in `/backend/main.go` and provides endpoints to i
 
 ## Installation and Running
 - Ensure you have the DB credentials and connection strings set up for MongoDB and SQL Server Express.
+- Write all variables in `.env`, use `.env.example` as a template.
 - Running the script by running: `go run main.go` In your CLI.
+- Optionally, you may add the flag `-courses=1,2,3` to specify which courses to migrate. This flag overwrites `.env`.
 
 ## Running the API
 To run the API with Docker:
@@ -38,29 +40,6 @@ This will start the API service along with all dependencies (MongoDB, SQL Server
 The API provides OpenAPI documentation at the following endpoint:
 - `GET /docs` - OpenAPI documentation
 - `GET /openapi.json` - OpenAPI specification in JSON format
-
-## Plan
-
-### Containerization (Development and Environment Setup)
-- Dockerized MongoDB and SQL Server Express for easy development ease and demoing in a sandbox environment
-- Dockerized Goose for SQL Server Express migrations
-- Dockerized Goose for generation of schema.sql to be ingested by SQLc
-
-### Data Interface Layer
-- SQLc to Interface with SQL Server Express
-- Use Mongo Go driver for MongoDB
-
-### Script Outline
-- Pull the Course List from `.env`
-- Seed the SQL Server Express table from MongoDB
-  - Prevent duplicate records
-  - Insert new records (if any)
-  - Update existing records (if any)
-- When script is finished, log the number of rows that were inserted and updated
-
-### Restrictions/Constraints
-- Script must be idempotent: subsequent runs with identical MongoDB and course list states should not modify the SQL Server Express DB
-- Script logging should be less verbose
 
 ## Running Migrations
 
