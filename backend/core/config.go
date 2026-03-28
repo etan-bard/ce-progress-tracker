@@ -106,6 +106,15 @@ func (c *Config) GetMaxGoroutines() int {
 	return maxGoroutines
 }
 
+// GetAPIPort returns the API_PORT from the configuration
+func (c *Config) GetAPIPort() string {
+	port := c.Viper.GetString("API_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	return port
+}
+
 // getRequiredValue returns value with priority: .env key > env var.
 // If not found, logs an error.
 func (c *Config) getRequiredValue(envKey string) string {

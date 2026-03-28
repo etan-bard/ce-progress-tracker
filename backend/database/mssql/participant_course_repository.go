@@ -6,17 +6,30 @@ import (
 )
 
 type ParticipantCourseRepositoryInterface interface {
+	GetAll() (*[]ParticipantCourse, error)
 	UpsertAll(entries *[]ParticipantCourse, insertedCount *int, updatedCount *int, skippedCount *int) error
 }
 
 // ParticipantCourseRepository handles database operations for ParticipantCourse
 type ParticipantCourseRepository struct {
-	db DBServiceInterface
+	db        DBServiceInterface
+	tableName string
 }
 
-// NewParticipantCourseRepository creates a new repository instance
+// NewParticipantCourseRepository creates a new participantCourseRepository instance
 func NewParticipantCourseRepository(db DBServiceInterface) *ParticipantCourseRepository {
-	return &ParticipantCourseRepository{db: db}
+	return &ParticipantCourseRepository{
+		db:        db,
+		tableName: ParticipantCourse{}.TableName()}
+}
+
+func (r *ParticipantCourseRepository) GetAll() (*[]ParticipantCourse, error) {
+	var results []ParticipantCourse
+	query := fmt.Sprintf("SELECT * FROM %s", r.tableName)
+	if err := r.db.Select(&results, query); err != nil {
+		return nil, err
+	}
+	return &results, nil
 }
 
 // UpsertAll inserts or updates a list of ParticipantCourse entries and determines the action taken for each record
@@ -25,7 +38,8 @@ func (r *ParticipantCourseRepository) UpsertAll(entries *[]ParticipantCourse, in
 		return nil
 	}
 
-	tableName := ParticipantCourse{}.TableName()
+	// Max of 2000 parameters. For simplicity, will handle this in the main func, but for general use
+	// it would be ideal to do batch processing in this function.
 	var valueStrings []string
 	var valueArgs []any
 	for _, entry := range *entries {
@@ -37,8 +51,7 @@ func (r *ParticipantCourseRepository) UpsertAll(entries *[]ParticipantCourse, in
 		return fmt.Errorf("argument count mismatch: expected %d, got %d", len(valueStrings)*4, len(valueArgs))
 	}
 
-	// Values seems to have a limit of 1000. For simplicity, will handle this in the main func, but for general use
-	// it would be ideal to do batch processing in this function.
+	// Merges values into the DB table, returning a simple count of if a row is updated or inserted.
 	query := fmt.Sprintf(`
 		MERGE INTO %s AS Target
 		USING (
@@ -59,7 +72,7 @@ func (r *ParticipantCourseRepository) UpsertAll(entries *[]ParticipantCourse, in
 		WHEN NOT MATCHED BY TARGET THEN
 			INSERT (ParticipantId, CourseId, DateLastAccessed, CourseCompletion)
 			VALUES (Source.ParticipantId, Source.CourseId, Source.DateLastAccessed, Source.CourseCompletion)
-		OUTPUT $action AS Action;`, tableName, strings.Join(valueStrings, ","))
+		OUTPUT $action AS Action;`, r.tableName, strings.Join(valueStrings, ","))
 
 	query = r.db.Rebind(query)
 
