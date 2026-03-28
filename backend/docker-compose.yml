@@ -5,8 +5,8 @@ services:
     ports:
       - "27017:27017"
     environment:
-      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_ROOT_USER}
-      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
+      - MONGODB_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGODB_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
       - MONGODB_INITDB_DATABASE=${MONGODB_DATABASE}
     restart: unless-stopped
     healthcheck:
@@ -24,12 +24,12 @@ services:
       - "1433:1433"
     environment:
       - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
+      - MSSQL_SA_PASSWORD=${MSSQL_PASSWORD}
       - MSSQL_USER=${MSSQL_USER}
       - MSSQL_PID=Express
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U ${MSSQL_USER} -P ${MSSQL_SA_PASSWORD} -C -Q 'SELECT 1' || exit 1" ]
+      test: [ "CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U ${MSSQL_USER} -P ${MSSQL_PASSWORD} -C -Q 'SELECT 1' || exit 1" ]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -38,33 +38,19 @@ services:
 
   goose:
     build:
-      context: .
       dockerfile: Dockerfile.goose
     container_name: ce-goose
     volumes:
-      - ./migrations:/migrations
+      - ./database/migrations:/migrations
     environment:
       - GOOSE_DRIVER=mssql
-      - GOOSE_DBSTRING=sqlserver://${MSSQL_USER}:${MSSQL_SA_PASSWORD}@ce-sqlserver:1433?encrypt=disable
+      - GOOSE_DBSTRING=sqlserver://${MSSQL_USER}:${MSSQL_PASSWORD}@ce-sqlserver:1433?encrypt=disable
     command: up
     restart: "no"
     init: true
     depends_on:
       sqlserver:
         condition: service_healthy
-
-  sql-gen:
-    image: sqlc/sqlc:latest
-    container_name: ce-sql-gen
-    volumes:
-      - .:/src
-    working_dir: /src
-    command: generate
-    restart: "no"
-    init: true
-    depends_on:
-      goose:
-        condition: service_completed_successfully
 
   mongodb-restore:
     image: mongodb/mongodb-community-server:8.2-ubi8
@@ -75,12 +61,24 @@ services:
       mongodb:
         condition: service_healthy
     volumes:
-      - ./mongo.dump:/mongo.dump:ro
+      - ./mongo.dump:/dump/mongo.dump:ro
     environment:
-      - MONGODB_ROOT_USER=${MONGODB_ROOT_USER}
-      - MONGODB_ROOT_PASSWORD=${MONGODB_ROOT_PASSWORD}
+      - MONGODB_ROOT_USER=${MONGODB_USER}
+      - MONGODB_ROOT_PASSWORD=${MONGODB_PASSWORD}
     command: >
-      mongorestore --host mongodb --username ${MONGODB_ROOT_USER} --password ${MONGODB_ROOT_PASSWORD} --authenticationDatabase admin --drop --archive=/mongo.dump --gzip
+      mongorestore --host mongodb --username ${MONGODB_USER} --password ${MONGODB_PASSWORD} --authenticationDatabase admin --drop --archive=/dump/mongo.dump --gzip
+    restart: "no"
+
+  mockery:
+    image: vektra/mockery:latest
+    container_name: ce-mockery
+    profiles:
+      - manual
+    environment:
+      - GOTOOLCHAIN=auto
+    volumes:
+      - .:/src
+    working_dir: /src
     restart: "no"
 
 volumes:

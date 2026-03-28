@@ -1,0 +1,11 @@
+include-auto-generated: true
+filename: "mocks.go"
+log-level: debug
+structname: "{{.Mock}}{{.InterfaceName}}"
+pkgname: "{{.SrcPackageName}}"
+recursive: true
+template: testify
+packages:
+  ce-progress-tracker/internal:
+    config:
+      all: true

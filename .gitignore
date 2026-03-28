@@ -9,9 +9,9 @@
 .idea_modules/
 
 # Environment variables
-.env
-.env.*
-!.env.example
+backend/.env
+backend/.env.example
+!backend/.env.example
 
 # Go
 /bin/
@@ -24,3 +24,7 @@ go.work
 
 # Atlas
 .atlas/
+
+# Agents
+.junie/
+.vibe/
