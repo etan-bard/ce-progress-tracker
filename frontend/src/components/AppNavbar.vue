@@ -5,8 +5,16 @@
     dark
     elevated
     height="64"
+    class="overflow-visible"
   >
-    <v-toolbar-title class="font-weight-bold">
+    <div class="cat-logo-container">
+      <img
+        src="@/assets/logo.svg"
+        alt="CE Progress Tracker Logo"
+        class="cat-logo"
+      />
+    </div>
+    <v-toolbar-title class="font-weight-bold ml-16">
       CE Progress Tracker
     </v-toolbar-title>
     
@@ -40,5 +48,22 @@ const reloadData = () => {
 </script>
 
 <style scoped>
+:deep(.v-toolbar__content) {
+  overflow: visible !important;
+}
 
+.cat-logo-container {
+  position: relative;
+  width: 64px;
+  height: 64px;
+}
+
+.cat-logo {
+  position: absolute;
+  bottom: -35px;
+  left: 6px;
+  height: 80px;
+  width: auto;
+  z-index: 1000;
+}
 </style>

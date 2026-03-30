@@ -21,7 +21,7 @@ const getColor = (percentage: number): string => {
 }
 
 const formatCompletion = (value: number): string => {
-  return `${(value * 100).toFixed(2)}`
+  return `${(value * 100).toFixed(2)}%`
 }
 </script>
 
