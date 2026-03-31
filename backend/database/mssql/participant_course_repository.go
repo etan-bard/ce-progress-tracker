@@ -48,14 +48,10 @@ func (r *ParticipantCourseRepository) UpsertAll(entries *[]ParticipantCourse, in
 		valueArgs = append(valueArgs, entry.ParticipantID, entry.CourseID, entry.DateLastAccessed, entry.CourseCompletion)
 	}
 
-	if len(valueArgs) != len(valueStrings)*4 {
-		return fmt.Errorf("argument count mismatch: expected %d, got %d", len(valueStrings)*4, len(valueArgs))
-	}
-
 	// Load query from SQL file
-	queryBytes, err := os.ReadFile("queries/upsert_participant_courses.sql")
+	queryBytes, err := os.ReadFile("./database/mssql/queries/upsert_participant_courses.sql")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read SQL query file: %w", err)
 	}
 	query := fmt.Sprintf(string(queryBytes), r.tableName, strings.Join(valueStrings, ","))
 

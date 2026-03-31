@@ -8,7 +8,7 @@ import (
 	"context"
 
 	mock "github.com/stretchr/testify/mock"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // NewMockDbServiceInterface creates a new instance of MockDbServiceInterface. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
@@ -89,20 +89,103 @@ func (_c *MockDbServiceInterface_Close_Call) RunAndReturn(run func(ctx context.C
 	return _c
 }
 
+// Find provides a mock function for the type MockDbServiceInterface
+func (_mock *MockDbServiceInterface) Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error) {
+	var tmpRet mock.Arguments
+	if len(opts) > 0 {
+		tmpRet = _mock.Called(ctx, filter, opts)
+	} else {
+		tmpRet = _mock.Called(ctx, filter)
+	}
+	ret := tmpRet
+
+	if len(ret) == 0 {
+		panic("no return value specified for Find")
+	}
+
+	var r0 CursorInterface
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, any, ...*options.FindOptions) (CursorInterface, error)); ok {
+		return returnFunc(ctx, filter, opts...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, any, ...*options.FindOptions) CursorInterface); ok {
+		r0 = returnFunc(ctx, filter, opts...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(CursorInterface)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, any, ...*options.FindOptions) error); ok {
+		r1 = returnFunc(ctx, filter, opts...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockDbServiceInterface_Find_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Find'
+type MockDbServiceInterface_Find_Call struct {
+	*mock.Call
+}
+
+// Find is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter any
+//   - opts ...*options.FindOptions
+func (_e *MockDbServiceInterface_Expecter) Find(ctx interface{}, filter interface{}, opts ...interface{}) *MockDbServiceInterface_Find_Call {
+	return &MockDbServiceInterface_Find_Call{Call: _e.mock.On("Find",
+		append([]interface{}{ctx, filter}, opts...)...)}
+}
+
+func (_c *MockDbServiceInterface_Find_Call) Run(run func(ctx context.Context, filter any, opts ...*options.FindOptions)) *MockDbServiceInterface_Find_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 any
+		if args[1] != nil {
+			arg1 = args[1].(any)
+		}
+		var arg2 []*options.FindOptions
+		var variadicArgs []*options.FindOptions
+		if len(args) > 2 {
+			variadicArgs = args[2].([]*options.FindOptions)
+		}
+		arg2 = variadicArgs
+		run(
+			arg0,
+			arg1,
+			arg2...,
+		)
+	})
+	return _c
+}
+
+func (_c *MockDbServiceInterface_Find_Call) Return(cursorInterface CursorInterface, err error) *MockDbServiceInterface_Find_Call {
+	_c.Call.Return(cursorInterface, err)
+	return _c
+}
+
+func (_c *MockDbServiceInterface_Find_Call) RunAndReturn(run func(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error)) *MockDbServiceInterface_Find_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetCollection provides a mock function for the type MockDbServiceInterface
-func (_mock *MockDbServiceInterface) GetCollection(name string) *mongo.Collection {
+func (_mock *MockDbServiceInterface) GetCollection(name string) CollectionInterface {
 	ret := _mock.Called(name)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetCollection")
 	}
 
-	var r0 *mongo.Collection
-	if returnFunc, ok := ret.Get(0).(func(string) *mongo.Collection); ok {
+	var r0 CollectionInterface
+	if returnFunc, ok := ret.Get(0).(func(string) CollectionInterface); ok {
 		r0 = returnFunc(name)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*mongo.Collection)
+			r0 = ret.Get(0).(CollectionInterface)
 		}
 	}
 	return r0
@@ -132,12 +215,302 @@ func (_c *MockDbServiceInterface_GetCollection_Call) Run(run func(name string)) 
 	return _c
 }
 
-func (_c *MockDbServiceInterface_GetCollection_Call) Return(collection *mongo.Collection) *MockDbServiceInterface_GetCollection_Call {
-	_c.Call.Return(collection)
+func (_c *MockDbServiceInterface_GetCollection_Call) Return(collectionInterface CollectionInterface) *MockDbServiceInterface_GetCollection_Call {
+	_c.Call.Return(collectionInterface)
 	return _c
 }
 
-func (_c *MockDbServiceInterface_GetCollection_Call) RunAndReturn(run func(name string) *mongo.Collection) *MockDbServiceInterface_GetCollection_Call {
+func (_c *MockDbServiceInterface_GetCollection_Call) RunAndReturn(run func(name string) CollectionInterface) *MockDbServiceInterface_GetCollection_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockCursorInterface creates a new instance of MockCursorInterface. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockCursorInterface(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockCursorInterface {
+	mock := &MockCursorInterface{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockCursorInterface is an autogenerated mock type for the CursorInterface type
+type MockCursorInterface struct {
+	mock.Mock
+}
+
+type MockCursorInterface_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockCursorInterface) EXPECT() *MockCursorInterface_Expecter {
+	return &MockCursorInterface_Expecter{mock: &_m.Mock}
+}
+
+// Close provides a mock function for the type MockCursorInterface
+func (_mock *MockCursorInterface) Close(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Close")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockCursorInterface_Close_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Close'
+type MockCursorInterface_Close_Call struct {
+	*mock.Call
+}
+
+// Close is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockCursorInterface_Expecter) Close(ctx interface{}) *MockCursorInterface_Close_Call {
+	return &MockCursorInterface_Close_Call{Call: _e.mock.On("Close", ctx)}
+}
+
+func (_c *MockCursorInterface_Close_Call) Run(run func(ctx context.Context)) *MockCursorInterface_Close_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCursorInterface_Close_Call) Return(err error) *MockCursorInterface_Close_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockCursorInterface_Close_Call) RunAndReturn(run func(ctx context.Context) error) *MockCursorInterface_Close_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Decode provides a mock function for the type MockCursorInterface
+func (_mock *MockCursorInterface) Decode(result any) error {
+	ret := _mock.Called(result)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Decode")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(any) error); ok {
+		r0 = returnFunc(result)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockCursorInterface_Decode_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Decode'
+type MockCursorInterface_Decode_Call struct {
+	*mock.Call
+}
+
+// Decode is a helper method to define mock.On call
+//   - result any
+func (_e *MockCursorInterface_Expecter) Decode(result interface{}) *MockCursorInterface_Decode_Call {
+	return &MockCursorInterface_Decode_Call{Call: _e.mock.On("Decode", result)}
+}
+
+func (_c *MockCursorInterface_Decode_Call) Run(run func(result any)) *MockCursorInterface_Decode_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 any
+		if args[0] != nil {
+			arg0 = args[0].(any)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCursorInterface_Decode_Call) Return(err error) *MockCursorInterface_Decode_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockCursorInterface_Decode_Call) RunAndReturn(run func(result any) error) *MockCursorInterface_Decode_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Next provides a mock function for the type MockCursorInterface
+func (_mock *MockCursorInterface) Next(ctx context.Context) bool {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Next")
+	}
+
+	var r0 bool
+	if returnFunc, ok := ret.Get(0).(func(context.Context) bool); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Get(0).(bool)
+	}
+	return r0
+}
+
+// MockCursorInterface_Next_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Next'
+type MockCursorInterface_Next_Call struct {
+	*mock.Call
+}
+
+// Next is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockCursorInterface_Expecter) Next(ctx interface{}) *MockCursorInterface_Next_Call {
+	return &MockCursorInterface_Next_Call{Call: _e.mock.On("Next", ctx)}
+}
+
+func (_c *MockCursorInterface_Next_Call) Run(run func(ctx context.Context)) *MockCursorInterface_Next_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCursorInterface_Next_Call) Return(b bool) *MockCursorInterface_Next_Call {
+	_c.Call.Return(b)
+	return _c
+}
+
+func (_c *MockCursorInterface_Next_Call) RunAndReturn(run func(ctx context.Context) bool) *MockCursorInterface_Next_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockCollectionInterface creates a new instance of MockCollectionInterface. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockCollectionInterface(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockCollectionInterface {
+	mock := &MockCollectionInterface{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockCollectionInterface is an autogenerated mock type for the CollectionInterface type
+type MockCollectionInterface struct {
+	mock.Mock
+}
+
+type MockCollectionInterface_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockCollectionInterface) EXPECT() *MockCollectionInterface_Expecter {
+	return &MockCollectionInterface_Expecter{mock: &_m.Mock}
+}
+
+// Find provides a mock function for the type MockCollectionInterface
+func (_mock *MockCollectionInterface) Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error) {
+	var tmpRet mock.Arguments
+	if len(opts) > 0 {
+		tmpRet = _mock.Called(ctx, filter, opts)
+	} else {
+		tmpRet = _mock.Called(ctx, filter)
+	}
+	ret := tmpRet
+
+	if len(ret) == 0 {
+		panic("no return value specified for Find")
+	}
+
+	var r0 CursorInterface
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, any, ...*options.FindOptions) (CursorInterface, error)); ok {
+		return returnFunc(ctx, filter, opts...)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, any, ...*options.FindOptions) CursorInterface); ok {
+		r0 = returnFunc(ctx, filter, opts...)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(CursorInterface)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, any, ...*options.FindOptions) error); ok {
+		r1 = returnFunc(ctx, filter, opts...)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockCollectionInterface_Find_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Find'
+type MockCollectionInterface_Find_Call struct {
+	*mock.Call
+}
+
+// Find is a helper method to define mock.On call
+//   - ctx context.Context
+//   - filter any
+//   - opts ...*options.FindOptions
+func (_e *MockCollectionInterface_Expecter) Find(ctx interface{}, filter interface{}, opts ...interface{}) *MockCollectionInterface_Find_Call {
+	return &MockCollectionInterface_Find_Call{Call: _e.mock.On("Find",
+		append([]interface{}{ctx, filter}, opts...)...)}
+}
+
+func (_c *MockCollectionInterface_Find_Call) Run(run func(ctx context.Context, filter any, opts ...*options.FindOptions)) *MockCollectionInterface_Find_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 any
+		if args[1] != nil {
+			arg1 = args[1].(any)
+		}
+		var arg2 []*options.FindOptions
+		var variadicArgs []*options.FindOptions
+		if len(args) > 2 {
+			variadicArgs = args[2].([]*options.FindOptions)
+		}
+		arg2 = variadicArgs
+		run(
+			arg0,
+			arg1,
+			arg2...,
+		)
+	})
+	return _c
+}
+
+func (_c *MockCollectionInterface_Find_Call) Return(cursorInterface CursorInterface, err error) *MockCollectionInterface_Find_Call {
+	_c.Call.Return(cursorInterface, err)
+	return _c
+}
+
+func (_c *MockCollectionInterface_Find_Call) RunAndReturn(run func(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error)) *MockCollectionInterface_Find_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -170,23 +543,23 @@ func (_m *MockTakesAnonymizedRepositoryInterface) EXPECT() *MockTakesAnonymizedR
 }
 
 // GetCourseIDCursor provides a mock function for the type MockTakesAnonymizedRepositoryInterface
-func (_mock *MockTakesAnonymizedRepositoryInterface) GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (*mongo.Cursor, error) {
+func (_mock *MockTakesAnonymizedRepositoryInterface) GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (CursorInterface, error) {
 	ret := _mock.Called(ctx, courseIDs, batchSize)
 
 	if len(ret) == 0 {
 		panic("no return value specified for GetCourseIDCursor")
 	}
 
-	var r0 *mongo.Cursor
+	var r0 CursorInterface
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]int, int) (*mongo.Cursor, error)); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]int, int) (CursorInterface, error)); ok {
 		return returnFunc(ctx, courseIDs, batchSize)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]int, int) *mongo.Cursor); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *[]int, int) CursorInterface); ok {
 		r0 = returnFunc(ctx, courseIDs, batchSize)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*mongo.Cursor)
+			r0 = ret.Get(0).(CursorInterface)
 		}
 	}
 	if returnFunc, ok := ret.Get(1).(func(context.Context, *[]int, int) error); ok {
@@ -233,12 +606,12 @@ func (_c *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call) Run(run
 	return _c
 }
 
-func (_c *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call) Return(cursor *mongo.Cursor, err error) *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call {
-	_c.Call.Return(cursor, err)
+func (_c *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call) Return(cursorInterface CursorInterface, err error) *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call {
+	_c.Call.Return(cursorInterface, err)
 	return _c
 }
 
-func (_c *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call) RunAndReturn(run func(ctx context.Context, courseIDs *[]int, batchSize int) (*mongo.Cursor, error)) *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call {
+func (_c *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call) RunAndReturn(run func(ctx context.Context, courseIDs *[]int, batchSize int) (CursorInterface, error)) *MockTakesAnonymizedRepositoryInterface_GetCourseIDCursor_Call {
 	_c.Call.Return(run)
 	return _c
 }

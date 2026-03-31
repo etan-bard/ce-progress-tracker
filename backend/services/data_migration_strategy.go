@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 type DataMigrationStrategyInterface interface {
@@ -45,21 +46,19 @@ func (b *BatchDataMigrationStrategy) Execute(ctx context.Context, courseIDs *[]i
 	// This will not snapshot. Options: pass a snapshot=true flag (if supported in MongoDB)
 	cursor, err := b.takesAnonymizedRepository.GetCourseIDCursor(ctx, courseIDs, b.batchSize)
 	if err != nil {
-		b.logger.Fatal("Failed to query MongoDB collection", zap.Error(err))
+		return 0, 0, 0, err
 	}
-	defer cursor.Close(context.Background())
+	defer cursor.Close(ctx)
 
 	var totalInserted, totalUpdated, totalSkipped int
 	batch := make([]mssql.ParticipantCourse, 0, b.batchSize)
 
-	var wg sync.WaitGroup
+	goPool, gCtx := errgroup.WithContext(ctx)
+	goPool.SetLimit(b.maxGoroutines)
 	totalsMutex := sync.Mutex{}
 
-	// Semaphore to limit concurrent goroutines
-	sem := make(chan struct{}, b.maxGoroutines)
-
 	// Iterate over the input data
-	for cursor.Next(context.Background()) {
+	for cursor.Next(gCtx) {
 		var mongoRecord mongo2.TakesAnonymized
 		if err := cursor.Decode(&mongoRecord); err != nil {
 			return 0, 0, 0, err
@@ -77,13 +76,9 @@ func (b *BatchDataMigrationStrategy) Execute(ctx context.Context, courseIDs *[]i
 		// Process the batch if it hits the size limit
 		if len(batch) == b.batchSize {
 			currentBatch := batch
-			wg.Add(1)
-			sem <- struct{}{} // Acquire semaphore
-			go func() {
-				defer wg.Done()
-				defer func() { <-sem }() // Release semaphore
-				b.processBatch(ctx, currentBatch, &totalsMutex, &totalInserted, &totalUpdated, &totalSkipped)
-			}()
+			goPool.Go(func() error {
+				return b.processBatch(currentBatch, &totalsMutex, &totalInserted, &totalUpdated, &totalSkipped)
+			})
 
 			// Create a new batch for the next iteration
 			batch = make([]mssql.ParticipantCourse, 0, b.batchSize)
@@ -93,30 +88,28 @@ func (b *BatchDataMigrationStrategy) Execute(ctx context.Context, courseIDs *[]i
 	// Process any remaining records in the last batch
 	if len(batch) > 0 {
 		currentBatch := batch
-		wg.Add(1)
-		sem <- struct{}{} // Acquire semaphore
-		go func() {
-			defer wg.Done()
-			defer func() { <-sem }() // Release semaphore
-			b.processBatch(ctx, currentBatch, &totalsMutex, &totalInserted, &totalUpdated, &totalSkipped)
-		}()
+		goPool.Go(func() error {
+			return b.processBatch(currentBatch, &totalsMutex, &totalInserted, &totalUpdated, &totalSkipped)
+		})
 	}
 
 	// Wait for all goroutines to complete
-	wg.Wait()
+	if err := goPool.Wait(); err != nil {
+		return 0, 0, 0, err
+	}
 
 	return totalInserted, totalUpdated, totalSkipped, nil
 }
 
-func (b *BatchDataMigrationStrategy) processBatch(ctx context.Context, batch []mssql.ParticipantCourse, mutex *sync.Mutex, totalInserted, totalUpdated, totalSkipped *int) {
+func (b *BatchDataMigrationStrategy) processBatch(batch []mssql.ParticipantCourse, mutex *sync.Mutex, totalInserted, totalUpdated, totalSkipped *int) error {
 	if len(batch) == 0 {
-		return
+		return nil
 	}
 
 	var inserted, updated, skipped int
 	if err := b.participantCourseRepository.UpsertAll(&batch, &inserted, &updated, &skipped); err != nil {
 		b.logger.Error("Error processing batch", zap.Error(err))
-		return
+		return err
 	}
 
 	mutex.Lock()
@@ -126,4 +119,5 @@ func (b *BatchDataMigrationStrategy) processBatch(ctx context.Context, batch []m
 	mutex.Unlock()
 
 	b.logger.Info("Batch processed", zap.Int("inserted", inserted), zap.Int("updated", updated), zap.Int("skipped", skipped))
+	return nil
 }

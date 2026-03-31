@@ -19,9 +19,9 @@ The backend API is implemented in `/backend/main.go` and provides endpoints to i
 - SQL Server Express
 
 ## Installation and Running
-- Ensure you have the DB credentials and connection strings set up for MongoDB and SQL Server Express.
+- For local development, a docker-file script is provided which will launch Mongo and SQL Server Express.
 - Write all variables in `.env`, use `.env.example` as a template.
-- Running the script by running: `go run main.go` In your CLI.
+- Running the script by running: `go run main.go` In your CLI or IDE of choice.
 - Optionally, you may add the flag `-courses=1,2,3` to specify which courses to migrate. This flag overwrites `.env`.
 
 ## Running the API
