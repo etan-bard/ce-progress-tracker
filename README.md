@@ -43,6 +43,8 @@ The API provides OpenAPI documentation at the following endpoint:
 
 ## Running Migrations
 
+When you run the API, migrations are automatically ran to update the database to the latest state. You may optionally migrate the database using the following commands.
+
 **Up Migration(s):** 
 
 `docker-compose run --rm goose up`
