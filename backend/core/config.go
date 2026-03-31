@@ -47,7 +47,7 @@ func (c *Config) GetCourseIDs() *[]int {
 	if c.Viper.IsSet("COURSE_IDS") {
 		courseIDs := c.Viper.GetIntSlice("COURSE_IDS")
 		return &courseIDs
-	} else if c.courses != nil {
+	} else if c.courses != nil && *c.courses != "" {
 		courseStrings := strings.Split(*c.courses, ",")
 		courseIDs := make([]int, 0, len(*c.courses))
 		for _, s := range courseStrings {
@@ -92,8 +92,8 @@ func (c *Config) GetMongoDBName() string {
 
 func (c *Config) GetScriptBatchSize() int {
 	batchSize := c.Viper.GetInt("SCRIPT_BATCH_SIZE")
-	if batchSize <= 0 || batchSize > 1000 {
-		batchSize = 1000
+	if batchSize <= 0 || batchSize > 500 {
+		batchSize = 500
 	}
 	return batchSize
 }
