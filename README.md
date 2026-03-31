@@ -15,8 +15,8 @@ The backend API is implemented in `/backend/main.go` and provides endpoints to i
 
 ## Prerequisites
 - Go v1.26
-- MongoDB
-- SQL Server Express
+- Docker
+- Optionally MongoDB and Sql Server Express
 
 ## Installation and Running
 - For local development, a docker-file script is provided which will launch Mongo and SQL Server Express.
