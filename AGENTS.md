@@ -1,9 +1,9 @@
 ### Idempotent Script Application
 This project utilizes an idempotent script for migrating data from MongoDB to SQL Server Express.
 
-Run script with:
+Run script with in `/backend/scripts`:
 ```bash
-go run main.go
+go run migrate_data.go
 ```
 
 ### Dockerized Development Environment
