@@ -1,4 +1,3 @@
-import axios from 'axios'
 import type { Takes } from '@/types'
 
 // Define the backend response type
@@ -11,40 +10,40 @@ interface ParticipantCourseResponse {
   CourseCompletion: number
 }
 
-// Create Axios instance with base configuration
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
+// Base URL for API requests
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
-// Add request interceptor for logging and potential auth tokens
-api.interceptors.request.use(
-  (config) => {
-    console.log(`Making ${config.method?.toUpperCase()} request to ${config.url}`)
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
+// Helper function for logging requests
+const logRequest = (method: string, url: string) => {
+  console.log(`Making ${method.toUpperCase()} request to ${url}`)
+}
 
-// Add response interceptor for error handling
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message)
-    return Promise.reject(error)
-  }
-)
+// Helper function for error handling
+const handleError = (error: unknown) => {
+  console.error('API Error:', error instanceof Error ? error.message : String(error))
+  throw new Error('Failed to fetch participant courses. Please try again later.')
+}
 
 export const fetchParticipantCourses = async (): Promise<Takes[]> => {
+  const url = `${BASE_URL}/participant-courses`
+  
   try {
-    const response = await api.get<ParticipantCourseResponse[]>('/participant-courses')
+    logRequest('GET', url)
+    const response = await fetch(url)
     
-    return response.data.map(item => ({
+    if (!response.ok) {
+      console.error('Failed to fetch participant courses:', response.statusText)
+      throw new Error('Failed to fetch participant courses. Please try again later.')
+    }
+    
+    const data: ParticipantCourseResponse[] = await response.json()
+    
+    if (!data || data.length === 0) {
+      console.log('No participant course data available')
+      throw new Error('No participant course data available')
+    }
+
+    return data.map(item => ({
       participantId: item.ParticipantID,
       courseId: item.CourseID,
       courseName: item.CourseName || `Course ${item.CourseID}`,
@@ -53,9 +52,10 @@ export const fetchParticipantCourses = async (): Promise<Takes[]> => {
       courseCompletion: item.CourseCompletion,
     }))
   } catch (error) {
-    console.error('Failed to fetch participant courses:', error)
-    throw new Error('Failed to fetch participant courses. Please try again later.')
+    handleError(error)
+    // This line is theoretically unreachable due to handleError throwing
+    throw error
   }
 }
 
-export default api
+export default { fetchParticipantCourses }

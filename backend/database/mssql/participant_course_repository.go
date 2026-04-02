@@ -52,6 +52,7 @@ func (r *ParticipantCourseRepository) UpsertAll(entries *[]ParticipantCourse, in
 	}
 
 	// Merges values into the DB table, returning a simple count of if a row is updated or inserted.
+	// TODO: Add DateFirstAccessed field to the MERGE query to persist this data
 	query := fmt.Sprintf(`
 		MERGE INTO %s AS Target
 		USING (
