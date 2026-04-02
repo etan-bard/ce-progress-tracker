@@ -8,8 +8,27 @@ import (
 )
 
 type DbServiceInterface interface {
-	GetCollection(name string) *mongo.Collection
+	GetCollection(name string) CollectionInterface
 	Close(ctx context.Context) error
+	Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error)
+}
+
+type CursorInterface interface {
+	Next(ctx context.Context) bool
+	Decode(result any) error
+	Close(ctx context.Context) error
+}
+
+type CollectionInterface interface {
+	Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error)
+}
+
+type mongoCollection struct {
+	*mongo.Collection
+}
+
+func (c *mongoCollection) Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error) {
+	return c.Collection.Find(ctx, filter, opts...)
 }
 
 type DBService struct {
@@ -29,10 +48,14 @@ func NewMongoDBService(ctx context.Context, uri, dbName string) (DbServiceInterf
 	}, nil
 }
 
-func (s *DBService) GetCollection(name string) *mongo.Collection {
-	return s.db.Collection(name)
+func (s *DBService) GetCollection(name string) CollectionInterface {
+	return &mongoCollection{s.db.Collection(name)}
 }
 
 func (s *DBService) Close(ctx context.Context) error {
 	return s.client.Disconnect(ctx)
+}
+
+func (s *DBService) Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error) {
+	return s.GetCollection("takes_anonymized").Find(ctx, filter, opts...)
 }

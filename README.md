@@ -10,7 +10,7 @@ A web application to display CE progress data from SQL Server Express.
 The backend API is implemented in `/backend/main.go` and provides endpoints to interact with participant-course data stored in SQL Server Express. The API uses:
 - Huma framework for OpenAPI documentation
 - Chi router for HTTP routing
-- SQLC for database operations
+- SQLx for database operations
 - MSSQL database service for data persistence
 
 ## Frontend UI
@@ -117,12 +117,14 @@ The table supports sorting by:
 
 ## Prerequisites
 - Go v1.26
-- MongoDB
-- SQL Server Express
+- Docker
+- Optionally MongoDB and Sql Server Express
 
 ## Installation and Running
-- Ensure you have the DB credentials and connection strings set up for MongoDB and SQL Server Express.
-- Running the script by running: `go run main.go` In your CLI.
+- For local development, a docker-file script is provided which will launch Mongo and SQL Server Express.
+- Write all variables in `.env`, use `.env.example` as a template.
+- Running the script by running: `go run main.go` In your CLI or IDE of choice.
+- Optionally, you may add the flag `-courses=1,2,3` to specify which courses to migrate. This flag overwrites `.env`.
 
 ## Running the API
 To run the API with Docker:
@@ -136,30 +138,14 @@ This will start the API service along with all dependencies (MongoDB, SQL Server
 ## API Endpoints
 - `GET /participant-courses` - Retrieves all participant-course mappings with completion and access date information
 
-## Plan
-
-### Containerization (Development and Environment Setup)
-- Dockerized MongoDB and SQL Server Express for easy development ease and demoing in a sandbox environment
-- Dockerized Goose for SQL Server Express migrations
-- Dockerized Goose for generation of schema.sql to be ingested by SQLc
-
-### Data Interface Layer
-- SQLc to Interface with SQL Server Express
-- Use Mongo Go driver for MongoDB
-
-### Script Outline
-- Pull the Course List from `.env`
-- Seed the SQL Server Express table from MongoDB
-  - Prevent duplicate records
-  - Insert new records (if any)
-  - Update existing records (if any)
-- When script is finished, log the number of rows that were inserted and updated
-
-### Restrictions/Constraints
-- Script must be idempotent: subsequent runs with identical MongoDB and course list states should not modify the SQL Server Express DB
-- Script logging should be less verbose
+## OpenAPI Documentation
+The API provides OpenAPI documentation at the following endpoint:
+- `GET /docs` - OpenAPI documentation
+- `GET /openapi.json` - OpenAPI specification in JSON format
 
 ## Running Migrations
+
+When you run the API, migrations are automatically ran to update the database to the latest state. You may optionally migrate the database using the following commands.
 
 **Up Migration(s):** 
 

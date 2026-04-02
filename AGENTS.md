@@ -1,16 +1,17 @@
 ### Idempotent Script Application
 This project utilizes an idempotent script for migrating data from MongoDB to SQL Server Express.
 
-Run script with:
+Run script with in `/backend/scripts`:
 ```bash
-go run main.go
+go run migrate_data.go
 ```
 
 ### Dockerized Development Environment
-You are working within a Dockerized application utilizing `docker-compose.yml`. The following services are available:
+You are working within a Dockerized application. Reference  `/backend/docker-compose.yml` for the setup.
+The following services are available:
 
-- **mongodb**: Database service on port `27017`.
-- **sqlserver**: Database service on port `1433`.
+- **mongodb**: Database service.
+- **sqlserver**: Database service.
 - **goose**: Database migration tool for SQL Server.
 - **mongodb-restore**: Restores MongoDB from `mongo.dump` (manual profile).
 - **mockery**: Mock generation tool (manual profile).
@@ -29,6 +30,7 @@ docker-compose --profile manual up mongodb-restore
 ## API Implementation
 The backend API in `/backend/main.go` provides REST endpoints to interact with participant-course data. It uses:
 - Huma framework for OpenAPI documentation
+- SQLx for database interaction
 - Chi router for HTTP routing
 - MSSQL database service for data persistence
 

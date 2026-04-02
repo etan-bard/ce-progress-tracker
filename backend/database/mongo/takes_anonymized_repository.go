@@ -3,16 +3,15 @@ package mongo
 import (
 	"context"
 
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type TakesAnonymizedRepositoryInterface interface {
-	GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (*mongo.Cursor, error)
+	GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (CursorInterface, error)
 }
 
 type TakesAnonymizedRepository struct {
-	collection *mongo.Collection
+	collection CollectionInterface
 }
 
 func NewTakesAnonymizedRepository(mongo DbServiceInterface) *TakesAnonymizedRepository {
@@ -21,7 +20,7 @@ func NewTakesAnonymizedRepository(mongo DbServiceInterface) *TakesAnonymizedRepo
 	}
 }
 
-func (t *TakesAnonymizedRepository) GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (*mongo.Cursor, error) {
+func (t *TakesAnonymizedRepository) GetCourseIDCursor(ctx context.Context, courseIDs *[]int, batchSize int) (CursorInterface, error) {
 	// Create filter based on courseIDs
 	var filter = make(map[string]interface{})
 
