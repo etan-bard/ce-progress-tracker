@@ -35,9 +35,9 @@ const theme = useTheme()
 onMounted(() => {
   const savedPreference = localStorage.getItem('themePreference')
   if (savedPreference) {
-    theme.global.name.value = savedPreference
+    theme.change(savedPreference)
   } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    theme.global.name.value = 'dark'
+    theme.change('dark')
   }
 })
 
