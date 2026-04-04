@@ -1,20 +1,17 @@
 # CE Progress Tracker
+This mono-repository contains 3 components for the assignment. Task 1 includes a script to migrate data from MongoDB to SQL Server Express. 
+Task 2 includes a backend API and a frontend website to display the migrated data.
 
-## CE Progress Sync Script
+## Task 1: CE Progress Sync Script
 A script to export CE progress data from MongoDB, and patch the data into SQL Server Express.
 
-## CE Progress Tracker Site
-A web application to display CE progress data from SQL Server Express.
-
-## API Implementation
+## CE Progress Tracker Backend API
 The backend API is implemented in `/backend/main.go` and provides endpoints to interact with participant-course data stored in SQL Server Express. The API uses:
 - Huma framework for OpenAPI documentation
 - Chi router for HTTP routing
-- SQLx for database operations
-- MSSQL database service for data persistence
+- SQLx for database operations against SQL Server Express
 
-## Frontend UI
-
+## Task 2: CE Progress Tracker Site
 The frontend application is located in the `/frontend` directory and provides a user interface to view participant progress data from SQL Server.
 
 ### UI Requirements
@@ -39,7 +36,7 @@ The frontend application is located in the `/frontend` directory and provides a 
 - **Framework**: Vue.js
 - **Components**: Vue Single File Components
 - **State Management**: Vue Composition API
-- **Styling**: CSS/TailwindCSS (to be determined)
+- **Styling**: Vuetify Framework
 
 ### Acceptance Criteria
 
@@ -72,48 +69,12 @@ npm run build
 
 The frontend connects to the backend API at `GET /participant-courses` endpoint to fetch participant progress data. This endpoint is implemented in `backend/database/mssql/participant_course_controller.go` and returns all participant-course mappings with completion and access date information.
 
-### Component Structure
-
-```
-frontend/
-├── src/
-│   ├── components/
-│   │   ├── ParticipantTable.vue      # Main table component
-│   │   ├── CourseColumn.vue          # Course column component
-│   │   └── SortControl.vue           # Sorting controls
-│   ├── composables/
-│   │   └── useParticipantData.js     # Data fetching logic
-│   ├── App.vue                       # Main application
-│   └── main.js                       # Entry point
-├── public/                           # Static assets
-└── package.json                      # Dependencies
-```
-
-### Data Flow
-
-```
-SQL Server → Backend API (GET /participant-courses) → Frontend Components → User Interface
-```
-
 ### Sorting Implementation
 
 The table supports sorting by:
 - Participant ID (ascending/descending)
 - Course completion percentage
 - Last accessed date
-
-### Error Handling
-
-- Network errors display user-friendly messages
-- Missing data shows "N/A" or appropriate placeholder
-- Loading states during data fetch
-
-### Future Enhancements
-
-- Filtering by course or participant
-- Export to CSV/Excel
-- Visual progress indicators
-- Detailed participant view
 
 ## Prerequisites
 - Go v1.26
