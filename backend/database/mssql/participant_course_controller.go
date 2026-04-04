@@ -22,7 +22,7 @@ func NewParticipantCourseController(repository ParticipantCourseRepositoryInterf
 
 // GetAllParticipantCoursesResponse wraps the response for getting all participant courses
 type GetAllParticipantCoursesResponse struct {
-	Body []ParticipantCourse
+	Body *[]ParticipantCourse `json:"body"`
 }
 
 // GetAllParticipantCourses retrieves all participant-course mappings from the repository
@@ -31,7 +31,8 @@ func (m *ParticipantCourseController) GetAllParticipantCourses(_ context.Context
 	if err != nil {
 		return nil, err
 	}
-	return &GetAllParticipantCoursesResponse{Body: *results}, nil
+
+	return &GetAllParticipantCoursesResponse{results}, nil
 }
 
 // Register registers all routes related to participant-course mappings

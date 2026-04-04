@@ -28,3 +28,4 @@ go.work
 # Agents
 .junie/
 .vibe/
+.playwright-cli/

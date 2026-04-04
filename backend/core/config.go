@@ -92,8 +92,8 @@ func (c *Config) GetMongoDBName() string {
 
 func (c *Config) GetScriptBatchSize() int {
 	batchSize := c.Viper.GetInt("SCRIPT_BATCH_SIZE")
-	if batchSize <= 0 || batchSize > 500 {
-		batchSize = 500
+	if batchSize <= 0 || batchSize > 400 {
+		batchSize = 400
 	}
 	return batchSize
 }

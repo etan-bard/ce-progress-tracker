@@ -6,13 +6,13 @@ import (
 
 // ParticipantCourse represents the [progress_tracker].[participant_to_course_map] table
 type ParticipantCourse struct {
-	ID                int        `db:"Id"`
-	ParticipantID     int        `db:"ParticipantId"`
-	CourseID          int        `db:"CourseId"`
-	DateFirstAccessed *time.Time `db:"DateFirstAccessed"`
-	DateLastAccessed  time.Time  `db:"DateLastAccessed"`
-	CourseCompletion  float32    `db:"CourseCompletion"`
-	Action            string     `db:"Action"`
+	ID                int        `db:"Id" json:"-"`
+	ParticipantID     int        `db:"ParticipantId" json:"participantId"`
+	CourseID          int        `db:"CourseId" json:"courseId"`
+	DateFirstAccessed *time.Time `db:"DateFirstAccessed" json:"dateFirstAccessed"`
+	DateLastAccessed  time.Time  `db:"DateLastAccessed" json:"dateLastAccessed"`
+	CourseCompletion  float32    `db:"CourseCompletion" json:"courseCompletion"`
+	Action            string     `db:"Action" json:"-"`
 }
 
 // TableName overrides the default table name to include the schema

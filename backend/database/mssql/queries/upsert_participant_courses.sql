@@ -2,11 +2,12 @@ MERGE INTO %s AS Target
 USING (
     SELECT 
         CAST(v.ParticipantId AS INT), 
-        CAST(v.CourseId AS INT), 
+        CAST(v.CourseId AS INT),
+        CAST(v.DateFirstAccessed AS DATETIME2),
         CAST(v.DateLastAccessed AS DATETIME2),
         CAST(v.CourseCompletion AS REAL)
-    FROM (VALUES %s) AS v (ParticipantId, CourseId, DateLastAccessed, CourseCompletion)
-) AS Source (ParticipantId, CourseId, DateLastAccessed, CourseCompletion)
+    FROM (VALUES %s) AS v (ParticipantId, CourseId, DateFirstAccessed, DateLastAccessed, CourseCompletion)
+) AS Source (ParticipantId, CourseId, DateFirstAccessed, DateLastAccessed, CourseCompletion)
 ON Target.ParticipantId = Source.ParticipantId AND Target.CourseId = Source.CourseId
 WHEN MATCHED AND (
     Target.DateLastAccessed IS DISTINCT FROM Source.DateLastAccessed 
@@ -15,6 +16,6 @@ WHEN MATCHED AND (
         Target.DateLastAccessed = Source.DateLastAccessed,
         Target.CourseCompletion = Source.CourseCompletion
 WHEN NOT MATCHED BY TARGET THEN
-    INSERT (ParticipantId, CourseId, DateLastAccessed, CourseCompletion)
-    VALUES (Source.ParticipantId, Source.CourseId, Source.DateLastAccessed, Source.CourseCompletion)
+    INSERT (ParticipantId, CourseId, DateFirstAccessed, DateLastAccessed, CourseCompletion)
+    VALUES (Source.ParticipantId, Source.CourseId, Source.DateFirstAccessed, Source.DateLastAccessed, Source.CourseCompletion)
 OUTPUT $action AS Action;

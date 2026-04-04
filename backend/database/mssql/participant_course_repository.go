@@ -44,8 +44,8 @@ func (r *ParticipantCourseRepository) UpsertAll(entries *[]ParticipantCourse, in
 	var valueStrings []string
 	var valueArgs []any
 	for _, entry := range *entries {
-		valueStrings = append(valueStrings, "(?, ?, ?, ?)")
-		valueArgs = append(valueArgs, entry.ParticipantID, entry.CourseID, entry.DateLastAccessed, entry.CourseCompletion)
+		valueStrings = append(valueStrings, "(?, ?, ?, ?, ?)")
+		valueArgs = append(valueArgs, entry.ParticipantID, entry.CourseID, entry.DateFirstAccessed, entry.DateLastAccessed, entry.CourseCompletion)
 	}
 
 	// Load query from SQL file
