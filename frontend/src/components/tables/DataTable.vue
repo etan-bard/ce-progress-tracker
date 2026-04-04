@@ -28,17 +28,13 @@
       class="mx-4 mb-4"
       @close="showDataTableHelp = false"
     >
-      This table shows each participant-course combination as a separate row with detailed information:
+      This table shows each participant-course combination as a separate row with detailed information.
     </HelpAlert>
 
-    <v-alert
+    <ErrorAlert
       v-if="props.error"
-      type="error"
-      variant="tonal"
-      class="mb-4"
-    >
-      {{ props.error }}
-    </v-alert>
+      :message="props.error"
+    />
 
     <v-data-table
       :headers="headers"
@@ -51,6 +47,14 @@
       <template v-slot:item.courseCompletion="{ value }">
         <CompletedPercentageCell :value="value" />
       </template>
+
+      <template v-slot:item.dateFirstAccessed="{ value }">
+        {{ formatDate(value) }}
+      </template>
+
+      <template v-slot:item.dateLastAccessed="{ value }">
+        {{ formatDate(value) }}
+      </template>
     </v-data-table>
   </v-card>
 </template>
@@ -59,8 +63,9 @@
 import { ref } from 'vue'
 import type { Takes } from "@/types"
 import CompletedPercentageCell from './CompletedPercentageCell.vue'
-import SearchField from './SearchField.vue'
-import HelpAlert from './HelpAlert.vue'
+import SearchField from '@/components/common/inputs/SearchField.vue'
+import HelpAlert from '@/components/common/messages/HelpAlert.vue'
+import ErrorAlert from '@/components/common/messages/ErrorAlert.vue'
 
 const search = ref('')
 const showDataTableHelp = ref(false)
@@ -72,12 +77,26 @@ const props = defineProps<{
   error?: string | null
 }>()
 
+const formatDate = (dateString: string | null): string => {
+  if (!dateString) return '—'
+  try {
+    const date = new Date(dateString)
+    // Treat dates before 1971 as "N/A"
+    if (date.getTime() < 31536000000) {
+      return 'N/A'
+    }
+    return date.toISOString()
+  } catch (error) {
+    return dateString
+  }
+}
+
 const headers = [
   { key: 'participantId', title: 'Participant ID', sortable: true },
   { key: 'courseId', title: 'Course ID', sortable: true },
   { key: 'dateFirstAccessed', title: 'First Accessed', sortable: true },
   { key: 'dateLastAccessed', title: 'Last Accessed', sortable: true },
-  { key: 'courseCompletion', title: 'Completion (%)', sortable: true, align: 'end' },
+  { key: 'courseCompletion', title: 'Completion (%)', sortable: true, align: 'end' as const },
 ]
 </script>
 

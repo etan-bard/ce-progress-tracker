@@ -22,7 +22,6 @@
 
     <ThemeSwitch class="mr-4" />
 
-    <!-- Reload Data Button -->
     <v-btn
       variant="text"
       @click="reloadData"
@@ -35,7 +34,7 @@
 </template>
 
 <script setup>
-import ThemeSwitch from "@/components/ThemeSwitch.vue";
+import ThemeSwitch from "@/components/common/inputs/ThemeSwitch.vue";
 
 const emit = defineEmits(['reload'])
 
