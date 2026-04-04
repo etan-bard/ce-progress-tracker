@@ -22,16 +22,15 @@ const darkMode = ref<boolean>(theme.global.current.value.dark)
 // Watch for theme changes and update localStorage
 watch(darkMode, (newValue: boolean) => {
   localStorage.setItem('themePreference', newValue ? 'dark' : 'light')
-  theme.global.name.value = newValue ? 'dark' : 'light'
+  theme.change(newValue ? 'dark' : 'light')
 })
 
 // Initialize from localStorage if available
 onMounted(() => {
   const savedPreference = localStorage.getItem('themePreference')
   if (savedPreference) {
-    const isDark = savedPreference === 'dark'
-    darkMode.value = isDark
-    theme.global.name.value = isDark ? 'dark' : 'light'
+    darkMode.value = (savedPreference === 'dark')
+    theme.change(savedPreference)
   }
 })
 </script>
