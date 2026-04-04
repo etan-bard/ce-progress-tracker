@@ -5,6 +5,11 @@ Task 2 includes a backend API and a frontend website to display the migrated dat
 ## Task 1: CE Progress Sync Script
 A script to export CE progress data from MongoDB, and patch the data into SQL Server Express.
 
+```bash
+cd /backend/scripts
+go run migrate_data.go
+```
+
 ## CE Progress Tracker Backend API
 The backend API is implemented in `/backend/main.go` and provides endpoints to interact with participant-course data stored in SQL Server Express. The API uses:
 - Huma framework for OpenAPI documentation
