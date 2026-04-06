@@ -27,7 +27,7 @@ func (m *ParticipantCourseMapper) MongoToSQL(record *mongo.TakesAnonymized) *mss
 		ParticipantID:     record.ParticipantData.ParticipantID,
 		CourseID:          record.CourseData.CourseID,
 		DateFirstAccessed: m.getUnixTimestamp(record.ParticipantData.DateFirstAccessed),
-		DateLastAccessed:  *m.getUnixTimestamp(record.ParticipantData.DateLastAccessed),
+		DateLastAccessed:  m.getUnixTimestamp(record.ParticipantData.DateLastAccessed),
 		CourseCompletion:  float32(record.ParticipantData.CourseCompletion),
 	}
 }

@@ -46,10 +46,15 @@ func main() {
 	participantCourseRepository := mssql.NewParticipantCourseRepository(db)
 	takesAnonymizedRepository := mongo.NewTakesAnonymizedRepository(mongoService)
 	mapper := services.NewParticipantCourseMapper()
-	batchSize := config.GetScriptBatchSize()
-	maxGoroutines := config.GetMaxGoroutines()
 
-	dataMigrationStrategy := services.NewBatchDataMigrationStrategy(mapper, participantCourseRepository, takesAnonymizedRepository, logger, batchSize, maxGoroutines)
+	dataMigrationStrategy := services.NewBatchDataMigrationStrategy(
+		mapper,
+		participantCourseRepository,
+		takesAnonymizedRepository,
+		logger,
+		config.GetScriptBatchSize(),
+		config.GetMaxGoroutines(),
+	)
 	inserted, updated, skipped, err := dataMigrationStrategy.Execute(context.Background(), config.GetCourseIDs())
 	if err != nil {
 		logger.Fatal("Migration failed", zap.Error(err))

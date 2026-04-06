@@ -10,7 +10,7 @@ CREATE TABLE [ProgressTracker].[ParticipantToCourseMap] (
     [ParticipantId] INT NOT NULL,
     [CourseId] INT NOT NULL,
     [DateFirstAccessed] DATETIME2 NULL,
-    [DateLastAccessed] DATETIME2 NOT NULL,
+    [DateLastAccessed] DATETIME2 NULL,
     [CourseCompletion] REAL NOT NULL DEFAULT(0)
     );
 

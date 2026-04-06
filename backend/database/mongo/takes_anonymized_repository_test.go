@@ -17,7 +17,7 @@ type TakesAnonymizedRepositoryTestSuite struct {
 	repo           *TakesAnonymizedRepository
 }
 
-// SetupTest initializes the test suite by creating mock instances of DbServiceInterface and CollectionInterface.
+// SetupTest initializes the test suite by creating mock instances of DBServiceInterface and CollectionInterface.
 // It then initializes the TakesAnonymizedRepository with the mock collection for testing purposes.
 func (s *TakesAnonymizedRepositoryTestSuite) SetupTest() {
 	s.mockDB = NewMockDbServiceInterface(s.T())

@@ -53,6 +53,7 @@ func (b *BatchDataMigrationStrategy) Execute(ctx context.Context, courseIDs *[]i
 	var totalInserted, totalUpdated, totalSkipped int
 	batch := make([]mssql.ParticipantCourse, 0, b.batchSize)
 
+	// Creates a Group of goroutines.
 	goPool, gCtx := errgroup.WithContext(ctx)
 	goPool.SetLimit(b.maxGoroutines)
 	totalsMutex := sync.Mutex{}

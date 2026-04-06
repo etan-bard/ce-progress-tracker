@@ -13,19 +13,29 @@ import (
 	"go.uber.org/zap"
 )
 
+type testCase struct {
+	name             string
+	setupMocks       func()
+	expectedInserted int
+	expectedUpdated  int
+	expectedSkipped  int
+	expectError      bool
+	errorContains    string
+}
+
 type DataMigrationStrategyTestSuite struct {
 	suite.Suite
-	mockMapper     *MockParticipantMapperInterface
-	mockRepository *mssql.MockParticipantCourseRepositoryInterface
-	mockMongoRepo  *mongo.MockTakesAnonymizedRepositoryInterface
-	strategy       *BatchDataMigrationStrategy
-	logger         *zap.Logger
+	mockMapper          *MockParticipantMapperInterface
+	mockRepository      *mssql.MockParticipantCourseRepositoryInterface
+	mockMongoRepository *mongo.MockTakesAnonymizedRepositoryInterface
+	strategy            *BatchDataMigrationStrategy
+	logger              *zap.Logger
 }
 
 func (s *DataMigrationStrategyTestSuite) SetupTest() {
 	s.mockMapper = NewMockParticipantMapperInterface(s.T())
 	s.mockRepository = mssql.NewMockParticipantCourseRepositoryInterface(s.T())
-	s.mockMongoRepo = mongo.NewMockTakesAnonymizedRepositoryInterface(s.T())
+	s.mockMongoRepository = mongo.NewMockTakesAnonymizedRepositoryInterface(s.T())
 
 	// Create a test logger
 	var err error
@@ -35,7 +45,7 @@ func (s *DataMigrationStrategyTestSuite) SetupTest() {
 	s.strategy = NewBatchDataMigrationStrategy(
 		s.mockMapper,
 		s.mockRepository,
-		s.mockMongoRepo,
+		s.mockMongoRepository,
 		s.logger,
 		10, // batchSize
 		2,  // maxGoroutines
@@ -50,15 +60,7 @@ func (s *DataMigrationStrategyTestSuite) TestExecute() {
 	ctx := context.Background()
 	courseIDs := []int{101, 102}
 
-	testCases := []struct {
-		name             string
-		setupMocks       func()
-		expectedInserted int
-		expectedUpdated  int
-		expectedSkipped  int
-		expectError      bool
-		errorContains    string
-	}{
+	testCases := []testCase{
 		{
 			name: "successful migration with all operations",
 			setupMocks: func() {
@@ -104,7 +106,7 @@ func (s *DataMigrationStrategyTestSuite) TestExecute() {
 				mockCursor.EXPECT().Close(mock.Anything).Return(nil).Once()
 
 				// Setup MongoDB repository mock
-				s.mockMongoRepo.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
+				s.mockMongoRepository.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
 
 				// Setup mapper mocks
 				s.mockMapper.EXPECT().MongoToSQL(&testRecords[0]).Return(&mssql.ParticipantCourse{
@@ -177,7 +179,7 @@ func (s *DataMigrationStrategyTestSuite) TestExecute() {
 				mockCursor.EXPECT().Close(mock.Anything).Return(nil).Once()
 
 				// Setup MongoDB repository mock
-				s.mockMongoRepo.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
+				s.mockMongoRepository.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
 
 				// Setup mapper mocks - first record maps successfully, second returns nil
 				s.mockMapper.EXPECT().MongoToSQL(&testRecords[0]).Return(&mssql.ParticipantCourse{
@@ -215,7 +217,7 @@ func (s *DataMigrationStrategyTestSuite) TestExecute() {
 				mockCursor.EXPECT().Next(mock.Anything).Return(false).Once()
 				mockCursor.EXPECT().Close(mock.Anything).Return(nil).Once()
 
-				s.mockMongoRepo.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
+				s.mockMongoRepository.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
 			},
 			expectedInserted: 0,
 			expectedUpdated:  0,
@@ -248,7 +250,7 @@ func (s *DataMigrationStrategyTestSuite) TestExecute() {
 				mockCursor.EXPECT().Next(mock.Anything).Return(false).Once()
 				mockCursor.EXPECT().Close(mock.Anything).Return(nil).Once()
 
-				s.mockMongoRepo.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
+				s.mockMongoRepository.EXPECT().GetCourseIDCursor(ctx, &courseIDs, 10).Return(mockCursor, nil).Once()
 				s.mockMapper.EXPECT().MongoToSQL(&testRecords[0]).Return(&mssql.ParticipantCourse{
 					ParticipantID:    1,
 					CourseID:         101,
@@ -290,7 +292,7 @@ func (s *DataMigrationStrategyTestSuite) TestExecute() {
 
 			s.mockMapper.AssertExpectations(s.T())
 			s.mockRepository.AssertExpectations(s.T())
-			s.mockMongoRepo.AssertExpectations(s.T())
+			s.mockMongoRepository.AssertExpectations(s.T())
 		})
 	}
 }

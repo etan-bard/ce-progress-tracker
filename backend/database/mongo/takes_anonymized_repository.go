@@ -14,7 +14,7 @@ type TakesAnonymizedRepository struct {
 	collection CollectionInterface
 }
 
-func NewTakesAnonymizedRepository(mongo DbServiceInterface) *TakesAnonymizedRepository {
+func NewTakesAnonymizedRepository(mongo DBServiceInterface) *TakesAnonymizedRepository {
 	return &TakesAnonymizedRepository{
 		collection: mongo.GetCollection("takes_anonymized"),
 	}

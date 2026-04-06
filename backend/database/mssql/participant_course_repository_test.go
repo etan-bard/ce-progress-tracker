@@ -33,13 +33,13 @@ func (s *ParticipantCourseRepositoryTestSuite) TestUpsertAll() {
 		{
 			ParticipantID:    1,
 			CourseID:         101,
-			DateLastAccessed: now,
+			DateLastAccessed: &now,
 			CourseCompletion: 1.0,
 		},
 		{
 			ParticipantID:    2,
 			CourseID:         102,
-			DateLastAccessed: now,
+			DateLastAccessed: &now,
 			CourseCompletion: 0.0,
 		},
 	}

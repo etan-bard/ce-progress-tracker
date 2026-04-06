@@ -38,11 +38,13 @@ func NewConfig() (*Config, error) {
 		courses: flag.String("courses", "", "comma-separated List of course IDs to process"),
 	}
 
+	// Parse the CLI arguments
 	flag.Parse()
 
 	return ret, nil
 }
 
+// GetCourseIDs returns the COURSE_IDS from the configuration
 func (c *Config) GetCourseIDs() *[]int {
 	if c.Viper.IsSet("COURSE_IDS") {
 		courseIDs := c.Viper.GetIntSlice("COURSE_IDS")
@@ -90,6 +92,7 @@ func (c *Config) GetMongoDBName() string {
 	return c.getRequiredValue("MONGODB_DATABASE")
 }
 
+// GetScriptBatchSize returns the SCRIPT_BATCH_SIZE from the configuration.
 func (c *Config) GetScriptBatchSize() int {
 	batchSize := c.Viper.GetInt("SCRIPT_BATCH_SIZE")
 	if batchSize <= 0 || batchSize > 400 {
@@ -98,6 +101,7 @@ func (c *Config) GetScriptBatchSize() int {
 	return batchSize
 }
 
+// GetMaxGoroutines returns the max goroutine threads that process data migrations
 func (c *Config) GetMaxGoroutines() int {
 	maxGoroutines := c.Viper.GetInt("MAX_GOROUTINES")
 	if maxGoroutines <= 0 {
@@ -115,8 +119,7 @@ func (c *Config) GetAPIPort() string {
 	return port
 }
 
-// getRequiredValue returns value with priority: .env key > env var.
-// If not found, logs an error.
+// getRequiredValue returns value if it is set, otherwise will fatal out
 func (c *Config) getRequiredValue(envKey string) string {
 	if c.Viper.IsSet(envKey) {
 		return c.Viper.GetString(envKey)

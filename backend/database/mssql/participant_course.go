@@ -10,7 +10,7 @@ type ParticipantCourse struct {
 	ParticipantID     int        `db:"ParticipantId" json:"participantId"`
 	CourseID          int        `db:"CourseId" json:"courseId"`
 	DateFirstAccessed *time.Time `db:"DateFirstAccessed" json:"dateFirstAccessed"`
-	DateLastAccessed  time.Time  `db:"DateLastAccessed" json:"dateLastAccessed"`
+	DateLastAccessed  *time.Time `db:"DateLastAccessed" json:"dateLastAccessed"`
 	CourseCompletion  float32    `db:"CourseCompletion" json:"courseCompletion"`
 	Action            string     `db:"Action" json:"-"`
 }
