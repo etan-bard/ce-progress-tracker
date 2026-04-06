@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type DbServiceInterface interface {
+type DBServiceInterface interface {
 	GetCollection(name string) CollectionInterface
 	Close(ctx context.Context) error
 	Find(ctx context.Context, filter any, opts ...*options.FindOptions) (CursorInterface, error)
@@ -36,7 +36,7 @@ type DBService struct {
 	db     *mongo.Database
 }
 
-func NewMongoDBService(ctx context.Context, uri, dbName string) (DbServiceInterface, error) {
+func NewMongoDBService(ctx context.Context, uri, dbName string) (DBServiceInterface, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err
